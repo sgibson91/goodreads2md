@@ -1,19 +1,18 @@
 ---
-author:
-  - "{{ author }}"
+author: {{ authors }}
+cover: "{{ cover_url }}"
 date-last-read: "{{ date_last_read }}"
 date-last-started: "{{ date_last_started }}"
+format: {{ formats }}
 genre: "{{ genre }}"
-goodreads: "{{ url }}"
-owned: "{{ owned }}"
+goodreads: "https://www.goodreads.com/book/show/{{ book_id }}"
+owned: {{ owned }}
 rating: "{{ rating }}"
-re-read: "{{ re_read }}"
+re-read: {{ re_read }}
 series: "{{ series }}"
-status: "{{ status }}"
+status: "{{ shelf }}"
 ---
-
-![]({{ cover_url }})
 
 ## Summary
 
-{{ description }}
+{{ book_description }}
