@@ -1,9 +1,45 @@
 import os
-
-# import re
+import re
+import string
+from datetime import datetime as dt
 from pathlib import Path
 
+import feedparser
 import jinja2
+from rich import print
+
+
+def get_subtitle():
+    return None
+
+
+def get_series_info(title):
+    match = re.fullmatch(r".+ \(((.+?),? #(\d+))\)", title)
+
+    return (
+        "(" + match.group(1) + ")",
+        match.group(2).replace(string.punctuation, "").strip(),
+        match.group(3),
+    )
+
+
+def get_clean_book_info(book_title):
+    if ("(" in book_title) and ("#" in book_title):
+        series, series_name, series_num = get_series_info(book_title)
+        book_title = book_title.replace(series, "")
+    else:
+        series = series_name = series_num = ""
+
+    if ":" in book_title:
+        subtitle = get_subtitle(book_title)
+        book_title = book_title.replace(subtitle, "")
+    else:
+        subtitle = ""
+
+    book_title = book_title.replace(string.punctuation, "")
+
+    return book_title.strip(), subtitle, series_name, series_num
+
 
 # Get the path to the root of the project
 ROOT = Path(__file__).parent.parent
@@ -29,28 +65,78 @@ GOODREADS_USER_ID = os.getenv("GOODREADS_USER_ID")
 # Construct Goodreads RSS base URL
 gr_rss_base_url = f"https://www.goodreads.com/review/list_rss/{GOODREADS_USER_ID}?key={GOODREADS_RSS_KEY}&shelf="
 
-# book_title = "Data Feminism"
-# metadata_vars = {
-#     "authors": ["Catherine D'Ignazio", "Lauren F. Klein"],
-#     "book_id": "51777543",
-#     "book_description": """A new way of thinking about data science and data ethics that is informed by the ideas of intersectional feminism.
+# Retrieve all the books in the Goodreads RSS feeds for each shelf
+for shelf in shelves:
+    feed = feedparser.parse(gr_rss_base_url + shelf)
+    for i, entry in enumerate(feed.entries):
+        if i > 0:
+            break
+        # print(entry.keys())
+        # print(entry.title)
+        title, subtitle, series, series_num = get_clean_book_info(entry.title)
 
-# Today, data science is a form of power. It has been used to expose injustice, improve health outcomes, and topple governments. But it has also been used to discriminate, police, and surveil. This potential for good, on the one hand, and harm, on the other, makes it essential to ask: Data science by whom? Data science for whom? Data science with whose interests in mind? The narratives around big data and data science are overwhelmingly white, male, and techno-heroic. In Data Feminism, Catherine D'Ignazio and Lauren Klein present a new way of thinking about data science and data ethics—one that is informed by intersectional feminist thought.
+        try:
+            read_at = dt.strptime(entry.user_read_at, "%a, %d %b %Y %H:%M:%S %z")
+            read_at = read_at.strftime("%Y-%m-%d")
+        except ValueError:
+            read_at = ""
 
-# Illustrating data feminism in action, D'Ignazio and Klein show how challenges to the male/female binary can help challenge other hierarchical (and empirically wrong) classification systems. They explain how, for example, an understanding of emotion can expand our ideas about effective data visualization, and how the concept of invisible labor can expose the significant human efforts required by our automated systems. And they show why the data never, ever “speak for themselves.”
+        metadata_vars = {
+            "authors": [entry.author_name],
+            "book_id": entry.book_id,
+            "cover_url": entry.book_large_image_url,
+            "date-last-read": read_at,
+            "format": [
+                fmt.replace("format-", "")
+                for fmt in entry.user_shelves.split(", ")
+                if fmt.startswith("format")
+            ],
+            "genre": "non-fiction"
+            if "non-fiction" in entry.user_shelves
+            else "fiction",
+            "owned": "true" if "owned" in entry.user_shelves else "false",
+            "rating": int(entry.user_rating) if int(entry.user_rating) > 0 else "",
+            "re-read": "true" if "re-read" in entry.user_shelves else "false",
+            "series-name": series,
+            "series-number": series_num,
+        }
+        print(metadata_vars)
+# Retrieve all the books in the Goodreads RSS feeds for each shelf
+for shelf in shelves:
+    feed = feedparser.parse(gr_rss_base_url + shelf)
+    for i, entry in enumerate(feed.entries):
+        if i > 0:
+            break
+        # print(entry.keys())
+        # print(entry.title)
+        title, subtitle, series, series_num = get_clean_book_info(entry.title)
 
-# Data Feminism offers strategies for data scientists seeking to learn how feminism can help them work toward justice, and for feminists who want to focus their efforts on the growing field of data science. But Data Feminism is about much more than gender. It is about power, about who has it and who doesn't, and about how those differentials of power can be challenged and changed.
-#     """,
-#     "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1572991302i/51777543.jpg",
-#     "date_last_read": "2025-11-07",
-#     "date_last_started": "2025-10-07",
-#     "formats": ["hardback"],
-#     "genre": "non-fiction",
-#     "owned": "true",
-#     "rating": "4",
-#     "series": "",
-#     "shelf": "read",
-# }
+        try:
+            read_at = dt.strptime(entry.user_read_at, "%a, %d %b %Y %H:%M:%S %z")
+            read_at = read_at.strftime("%Y-%m-%d")
+        except ValueError:
+            read_at = ""
+
+        metadata_vars = {
+            "authors": [entry.author_name],
+            "book_id": entry.book_id,
+            "cover_url": entry.book_large_image_url,
+            "date-last-read": read_at,
+            "format": [
+                fmt.replace("format-", "")
+                for fmt in entry.user_shelves.split(", ")
+                if fmt.startswith("format")
+            ],
+            "genre": "non-fiction"
+            if "non-fiction" in entry.user_shelves
+            else "fiction",
+            "owned": "true" if "owned" in entry.user_shelves else "false",
+            "rating": int(entry.user_rating) if int(entry.user_rating) > 0 else "",
+            "re-read": "true" if "re-read" in entry.user_shelves else "false",
+            "series-name": series,
+            "series-number": series_num,
+        }
+        print(metadata_vars)
 
 # markdown = template.render(**metadata_vars)
 # with open(f"{book_title}.md", "w") as f:
