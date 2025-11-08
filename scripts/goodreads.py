@@ -8,6 +8,7 @@ from pathlib import Path
 
 import feedparser
 import jinja2
+from html_to_markdown import convert
 
 
 def remove_punctuation(input_string):
@@ -74,6 +75,7 @@ def generate_metadata(entry):
     metadata_vars = {
         "authors": [entry.author_name],
         "book_id": entry.book_id,
+        "book_description": convert(entry.book_description),
         "cover_url": entry.book_large_image_url,
         "date-last-read": read_at,
         "format": [
