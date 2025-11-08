@@ -1,6 +1,8 @@
 import os
+import platform
 import re
 import string
+import tempfile
 from datetime import datetime as dt
 from pathlib import Path
 
@@ -87,8 +89,14 @@ def generate_metadata(entry):
     return title, metadata_vars
 
 
-# Get the path to the root of the project
+# Set paths
 ROOT = Path(__file__).parent.parent
+TMP_DIR = Path(
+    "/tmp" if platform.system() == "Darwin" else tempfile.gettempdir()
+).joinpath("books")
+
+if not os.path.exists(TMP_DIR):
+    os.makedirs(TMP_DIR)
 
 # Read in the template file with Jinja
 with open(ROOT.joinpath("templates", "template-book.md")) as f:
