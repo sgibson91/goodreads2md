@@ -9,16 +9,22 @@ import jinja2
 from rich import print
 
 
+def remove_punctuation(input_string):
+    regex_pattern = f"[{re.escape(string.punctuation)}]"
+    return re.sub(regex_pattern, "", input_string)
+
+
 def get_subtitle(title):
     return title.split(":")[1].strip()
 
 
 def get_series_info(title):
     match = re.fullmatch(r".+ \(((.+?),? #(\d+))\)", title)
+    series_name = remove_punctuation(match.group(2))
 
     return (
         "(" + match.group(1) + ")",
-        match.group(2).replace(string.punctuation, "").strip(),
+        series_name.strip(),
         match.group(3),
     )
 
@@ -36,8 +42,7 @@ def get_clean_book_info(book_title):
     else:
         subtitle = ""
 
-    book_title = book_title.replace(string.punctuation, "")
-
+    book_title = remove_punctuation(book_title)
     return book_title.strip(), subtitle, series_name, series_num
 
 
