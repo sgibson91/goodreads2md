@@ -8,7 +8,6 @@ from pathlib import Path
 
 import feedparser
 import jinja2
-from rich import print
 
 
 def remove_punctuation(input_string):
@@ -124,9 +123,7 @@ for shelf in shelves:
     feed = feedparser.parse(gr_rss_base_url + shelf)
     for entry in feed.entries:
         title, metadata = generate_metadata(entry)
-        print(title)
-        print(metadata)
 
-# markdown = template.render(**metadata_vars)
-# with open(f"{book_title}.md", "w") as f:
-#     f.write(markdown)
+        markdown = template.render(**metadata)
+        with open(TMP_DIR.joinpath(f"{title}.md"), "w") as f:
+            f.write(markdown)
