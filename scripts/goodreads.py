@@ -41,6 +41,14 @@ def get_clean_book_info(book_title):
     return book_title.strip(), subtitle, series_name, series_num
 
 
+def get_clean_shelf(shelf):
+    if shelf.startswith("to-read-"):
+        shelf = "to-read"
+    elif shelf.startswith("read-"):
+        shelf = "read"
+    return shelf
+
+
 # Get the path to the root of the project
 ROOT = Path(__file__).parent.parent
 
@@ -69,6 +77,7 @@ gr_rss_base_url = f"https://www.goodreads.com/review/list_rss/{GOODREADS_USER_ID
 for shelf in shelves:
     feed = feedparser.parse(gr_rss_base_url + shelf)
     for entry in feed.entries:
+        status = get_clean_shelf(shelf)
         title, subtitle, series, series_num = get_clean_book_info(entry.title)
 
         try:
@@ -95,6 +104,7 @@ for shelf in shelves:
             "re-read": "true" if "re-read" in entry.user_shelves else "false",
             "series-name": series,
             "series-number": series_num,
+            "status": status,
             "subtitle": subtitle,
         }
         print(metadata_vars)

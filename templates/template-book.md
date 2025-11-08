@@ -11,7 +11,7 @@ re-read: {{ re_read }}
 series-name: "{{ series_name }}"
 series-number: "{{ series_num }}"
 subtitle: "{{ subtitle }}"
-status: "{{ shelf }}"
+status: "{{ status }}"
 ---
 
 ## Summary
