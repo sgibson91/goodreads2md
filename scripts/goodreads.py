@@ -11,15 +11,18 @@ import jinja2
 
 
 def remove_punctuation(input_string):
+    """Replace punctuation in a string with an empty char"""
     regex_pattern = f"[{re.escape(string.punctuation)}]"
     return re.sub(regex_pattern, "", input_string)
 
 
 def get_subtitle(title):
+    """Extract a subtitle from a book's title"""
     return title.split(":")[1].strip()
 
 
 def get_series_info(title):
+    """Get book series info from a title object"""
     match = re.fullmatch(r".+ \(((.+?),? #(\d+))\)", title)
     series_name = remove_punctuation(match.group(2))
 
@@ -31,6 +34,7 @@ def get_series_info(title):
 
 
 def get_clean_book_info(book_title):
+    """Extract title, subtitle, and series and ensure it's filesystem safe"""
     if ("(" in book_title) and ("#" in book_title):
         series, series_name, series_num = get_series_info(book_title)
         book_title = book_title.replace(series, "")
@@ -48,6 +52,7 @@ def get_clean_book_info(book_title):
 
 
 def get_clean_shelf(shelf):
+    """Ensure shelves map to correct status"""
     if shelf.startswith("to-read-"):
         shelf = "to-read"
     elif shelf.startswith("read-"):
@@ -56,6 +61,7 @@ def get_clean_shelf(shelf):
 
 
 def generate_metadata(entry):
+    """Generate book metadata from Goodreads entry"""
     status = get_clean_shelf(shelf)
     title, subtitle, series, series_num = get_clean_book_info(entry.title)
 
@@ -105,6 +111,7 @@ with open(ROOT.joinpath("templates", "template-book.md")) as f:
 with open(ROOT.joinpath("resources", "goodreads-shelves.txt")) as f:
     shelves = [line.strip("\n") for line in f.readlines()]
 
+# Decide where env vars are being pulled from
 CI = os.getenv("CI", False)
 if not CI:
     from dotenv import load_dotenv
@@ -124,6 +131,7 @@ for shelf in shelves:
     for entry in feed.entries:
         title, metadata = generate_metadata(entry)
 
+        # Write a Markdown file for the current book
         markdown = template.render(**metadata)
         with open(TMP_DIR.joinpath(f"{title}.md"), "w") as f:
             f.write(markdown)
