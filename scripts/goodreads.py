@@ -9,8 +9,8 @@ import jinja2
 from rich import print
 
 
-def get_subtitle():
-    return None
+def get_subtitle(title):
+    return title.split(":")[1].strip()
 
 
 def get_series_info(title):
@@ -68,11 +68,7 @@ gr_rss_base_url = f"https://www.goodreads.com/review/list_rss/{GOODREADS_USER_ID
 # Retrieve all the books in the Goodreads RSS feeds for each shelf
 for shelf in shelves:
     feed = feedparser.parse(gr_rss_base_url + shelf)
-    for i, entry in enumerate(feed.entries):
-        if i > 0:
-            break
-        # print(entry.keys())
-        # print(entry.title)
+    for entry in feed.entries:
         title, subtitle, series, series_num = get_clean_book_info(entry.title)
 
         try:
@@ -99,42 +95,7 @@ for shelf in shelves:
             "re-read": "true" if "re-read" in entry.user_shelves else "false",
             "series-name": series,
             "series-number": series_num,
-        }
-        print(metadata_vars)
-# Retrieve all the books in the Goodreads RSS feeds for each shelf
-for shelf in shelves:
-    feed = feedparser.parse(gr_rss_base_url + shelf)
-    for i, entry in enumerate(feed.entries):
-        if i > 0:
-            break
-        # print(entry.keys())
-        # print(entry.title)
-        title, subtitle, series, series_num = get_clean_book_info(entry.title)
-
-        try:
-            read_at = dt.strptime(entry.user_read_at, "%a, %d %b %Y %H:%M:%S %z")
-            read_at = read_at.strftime("%Y-%m-%d")
-        except ValueError:
-            read_at = ""
-
-        metadata_vars = {
-            "authors": [entry.author_name],
-            "book_id": entry.book_id,
-            "cover_url": entry.book_large_image_url,
-            "date-last-read": read_at,
-            "format": [
-                fmt.replace("format-", "")
-                for fmt in entry.user_shelves.split(", ")
-                if fmt.startswith("format")
-            ],
-            "genre": "non-fiction"
-            if "non-fiction" in entry.user_shelves
-            else "fiction",
-            "owned": "true" if "owned" in entry.user_shelves else "false",
-            "rating": int(entry.user_rating) if int(entry.user_rating) > 0 else "",
-            "re-read": "true" if "re-read" in entry.user_shelves else "false",
-            "series-name": series,
-            "series-number": series_num,
+            "subtitle": subtitle,
         }
         print(metadata_vars)
 
