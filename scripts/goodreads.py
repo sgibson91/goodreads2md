@@ -49,6 +49,39 @@ def get_clean_shelf(shelf):
     return shelf
 
 
+def generate_metadata(entry):
+    status = get_clean_shelf(shelf)
+    title, subtitle, series, series_num = get_clean_book_info(entry.title)
+
+    try:
+        read_at = dt.strptime(entry.user_read_at, "%a, %d %b %Y %H:%M:%S %z")
+        read_at = read_at.strftime("%Y-%m-%d")
+    except ValueError:
+        read_at = ""
+
+    metadata_vars = {
+        "authors": [entry.author_name],
+        "book_id": entry.book_id,
+        "cover_url": entry.book_large_image_url,
+        "date-last-read": read_at,
+        "format": [
+            fmt.replace("format-", "")
+            for fmt in entry.user_shelves.split(", ")
+            if fmt.startswith("format")
+        ],
+        "genre": "non-fiction" if "non-fiction" in entry.user_shelves else "fiction",
+        "owned": "true" if "owned" in entry.user_shelves else "false",
+        "rating": int(entry.user_rating) if int(entry.user_rating) > 0 else "",
+        "re-read": "true" if "re-read" in entry.user_shelves else "false",
+        "series-name": series,
+        "series-number": series_num,
+        "status": status,
+        "subtitle": subtitle,
+    }
+
+    return title, metadata_vars
+
+
 # Get the path to the root of the project
 ROOT = Path(__file__).parent.parent
 
@@ -77,37 +110,9 @@ gr_rss_base_url = f"https://www.goodreads.com/review/list_rss/{GOODREADS_USER_ID
 for shelf in shelves:
     feed = feedparser.parse(gr_rss_base_url + shelf)
     for entry in feed.entries:
-        status = get_clean_shelf(shelf)
-        title, subtitle, series, series_num = get_clean_book_info(entry.title)
-
-        try:
-            read_at = dt.strptime(entry.user_read_at, "%a, %d %b %Y %H:%M:%S %z")
-            read_at = read_at.strftime("%Y-%m-%d")
-        except ValueError:
-            read_at = ""
-
-        metadata_vars = {
-            "authors": [entry.author_name],
-            "book_id": entry.book_id,
-            "cover_url": entry.book_large_image_url,
-            "date-last-read": read_at,
-            "format": [
-                fmt.replace("format-", "")
-                for fmt in entry.user_shelves.split(", ")
-                if fmt.startswith("format")
-            ],
-            "genre": "non-fiction"
-            if "non-fiction" in entry.user_shelves
-            else "fiction",
-            "owned": "true" if "owned" in entry.user_shelves else "false",
-            "rating": int(entry.user_rating) if int(entry.user_rating) > 0 else "",
-            "re-read": "true" if "re-read" in entry.user_shelves else "false",
-            "series-name": series,
-            "series-number": series_num,
-            "status": status,
-            "subtitle": subtitle,
-        }
-        print(metadata_vars)
+        title, metadata = generate_metadata(entry)
+        print(title)
+        print(metadata)
 
 # markdown = template.render(**metadata_vars)
 # with open(f"{book_title}.md", "w") as f:
