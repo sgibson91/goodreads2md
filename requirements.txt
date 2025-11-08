@@ -2,4 +2,3 @@ feedparser
 html-to-markdown
 jinja2
 python-dotenv
-rich
