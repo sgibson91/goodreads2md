@@ -24,14 +24,25 @@ def get_subtitle(title):
 
 def get_series_info(title):
     """Get book series info from a title object"""
-    match = re.fullmatch(r".+ \(((.+?),? #(\d+))\)", title)
-    series_name = remove_punctuation(match.group(2))
+    try:
+        # Single entry from a series, e.g., #3
+        match = re.fullmatch(r".+ \(((.+?),? #(\d+))\)", title)
+        series = "(" + match.group(1).strip() + ")"
+        series_name = remove_punctuation(match.group(2)).strip()
+        series_num = match.group(3).strip()
 
-    return (
-        "(" + match.group(1) + ")",
-        series_name.strip(),
-        match.group(3),
-    )
+    except AttributeError:
+        try:
+            # Omnibus, e.g. #1-3, OR novellas, e.g. #0.1
+            match = re.fullmatch(r".+ \(((.+?),? #(\d+[-\.]\d+))\)", title)
+            series = "(" + match.group(1).strip() + ")"
+            series_name = remove_punctuation(match.group(2)).strip()
+            series_num = match.group(3).strip()
+
+        except AttributeError:
+            series = series_name = series_num = ""
+
+    return series, series_name, series_num
 
 
 def get_clean_book_info(book_title):
