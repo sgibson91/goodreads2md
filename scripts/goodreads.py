@@ -13,7 +13,7 @@ from html_to_markdown import convert
 
 def remove_punctuation(input_string):
     """Replace punctuation in a string with an empty char"""
-    regex_pattern = f"[{re.escape(string.punctuation)}]"
+    regex_pattern = f"[{re.escape(string.punctuation)}’]"
     return re.sub(regex_pattern, "", input_string)
 
 
@@ -23,15 +23,23 @@ def get_subtitle(title):
 
 
 def get_series_info(title):
-    """Get book series info from a title object"""
-    match = re.fullmatch(r".+ \(((.+?),? #(\d+))\)", title)
-    series_name = remove_punctuation(match.group(2))
+    """Extract book series info from a title string."""
+    patterns = [
+        r".+ \(((.+?),? #(\d+))\)",  # Single entry (e.g., #3)
+        r".+ \(((.+?),? #(\d+[-\.]\d+))\)",  # Omnibus or novella (e.g., #1-3, #0.1)
+        r".+ \(((.+?),? #(\d+\.\d+-\d+))\)",  # Omnibus with novella (e.g., #0.1-4)
+    ]
 
-    return (
-        "(" + match.group(1) + ")",
-        series_name.strip(),
-        match.group(3),
-    )
+    for pattern in patterns:
+        match = re.fullmatch(pattern, title)
+        if match:
+            series = f"({match.group(1).strip()})"
+            series_name = remove_punctuation(match.group(2)).strip()
+            series_num = match.group(3).strip()
+            return series, series_name, series_num
+
+    # No match found
+    return "", "", ""
 
 
 def get_clean_book_info(book_title):
