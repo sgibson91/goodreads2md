@@ -23,26 +23,23 @@ def get_subtitle(title):
 
 
 def get_series_info(title):
-    """Get book series info from a title object"""
-    try:
-        # Single entry from a series, e.g., #3
-        match = re.fullmatch(r".+ \(((.+?),? #(\d+))\)", title)
-        series = "(" + match.group(1).strip() + ")"
-        series_name = remove_punctuation(match.group(2)).strip()
-        series_num = match.group(3).strip()
+    """Extract book series info from a title string."""
+    patterns = [
+        r".+ \(((.+?),? #(\d+))\)",  # Single entry (e.g., #3)
+        r".+ \(((.+?),? #(\d+[-\.]\d+))\)",  # Omnibus or novella (e.g., #1-3, #0.1)
+        r".+ \(((.+?),? #(\d+\.\d+-\d+))\)",  # Omnibus with novella (e.g., #0.1-4)
+    ]
 
-    except AttributeError:
-        try:
-            # Omnibus, e.g. #1-3, OR novellas, e.g. #0.1
-            match = re.fullmatch(r".+ \(((.+?),? #(\d+[-\.]\d+))\)", title)
-            series = "(" + match.group(1).strip() + ")"
+    for pattern in patterns:
+        match = re.fullmatch(pattern, title)
+        if match:
+            series = f"({match.group(1).strip()})"
             series_name = remove_punctuation(match.group(2)).strip()
             series_num = match.group(3).strip()
+            return series, series_name, series_num
 
-        except AttributeError:
-            series = series_name = series_num = ""
-
-    return series, series_name, series_num
+    # No match found
+    return "", "", ""
 
 
 def get_clean_book_info(book_title):
