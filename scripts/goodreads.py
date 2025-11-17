@@ -85,18 +85,18 @@ def generate_metadata(entry):
         "book_id": entry.book_id,
         "book_description": convert(entry.book_description),
         "cover_url": entry.book_large_image_url,
-        "date-last-read": read_at,
+        "date_last_read": read_at,
         "format": [
-            fmt.replace("format-", "")
-            for fmt in entry.user_shelves.split(", ")
-            if fmt.startswith("format")
+            fmt.strip().replace("format-", "")
+            for fmt in entry.user_shelves.split(",")
+            if fmt.strip().startswith("format")
         ],
         "genre": "non-fiction" if "non-fiction" in entry.user_shelves else "fiction",
         "owned": "true" if "owned" in entry.user_shelves else "false",
         "rating": int(entry.user_rating) if int(entry.user_rating) > 0 else "",
-        "re-read": "true" if "re-read" in entry.user_shelves else "false",
-        "series-name": series,
-        "series-number": series_num,
+        "re_read": "true" if "re-read" in entry.user_shelves else "false",
+        "series_name": series,
+        "series_number": series_num,
         "status": status,
         "subtitle": subtitle,
     }
