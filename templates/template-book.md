@@ -1,6 +1,6 @@
 ---
 author: {{ authors }}
-collection: ["[[Library]]"]
+collection: ["[[Library.base]]"]
 cover: "{{ cover_url }}"
 date-last-read: "{{ date_last_read }}"
 format: {{ format }}
