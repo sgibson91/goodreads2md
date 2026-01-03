@@ -13,7 +13,8 @@ from html_to_markdown import convert
 
 def remove_punctuation(input_string):
     """Replace punctuation in a string with an empty char"""
-    regex_pattern = f"[{re.escape(string.punctuation)}’]"
+    input_string = input_string.replace("&", "and")
+    regex_pattern = f"[{re.escape(string.punctuation.replace("-", ""))}’]"
     return re.sub(regex_pattern, "", input_string)
 
 
