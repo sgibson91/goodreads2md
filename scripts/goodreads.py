@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 import re
@@ -9,6 +10,14 @@ from pathlib import Path
 import feedparser
 import jinja2
 from html_to_markdown import convert
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    filename="/var/log/goodreads2md.log",
+    level=logging.DEBUG,
+    format="%(asctime)s - %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S",
+)
 
 
 def remove_punctuation(input_string):
@@ -139,7 +148,7 @@ gr_rss_base_url = f"https://www.goodreads.com/review/list_rss/{GOODREADS_USER_ID
 
 # Retrieve all the books in the Goodreads RSS feeds for each shelf
 for shelf in shelves:
-    print(f"Reading shelf: {shelf}")
+    logger.info(f"Reading shelf: {shelf}")
 
     feed = feedparser.parse(gr_rss_base_url + shelf)
     for entry in feed.entries:
