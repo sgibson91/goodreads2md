@@ -13,6 +13,7 @@ series-name: "{{ series_name }}"
 series-number: "{{ series_number }}"
 subtitle: "{{ subtitle }}"
 status: "{{ status }}"
+updated: "{{ updated_time }}"
 ---
 
 ## Summary

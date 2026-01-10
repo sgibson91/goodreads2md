@@ -100,6 +100,7 @@ def generate_metadata(entry):
         "series_number": series_num,
         "status": status,
         "subtitle": subtitle,
+        "updated_time": dt.now().strftime("%Y-%m-%dT%H:%M"),
     }
 
     return title, metadata_vars
@@ -138,6 +139,8 @@ gr_rss_base_url = f"https://www.goodreads.com/review/list_rss/{GOODREADS_USER_ID
 
 # Retrieve all the books in the Goodreads RSS feeds for each shelf
 for shelf in shelves:
+    print(f"Reading shelf: {shelf}")
+
     feed = feedparser.parse(gr_rss_base_url + shelf)
     for entry in feed.entries:
         title, metadata = generate_metadata(entry)
