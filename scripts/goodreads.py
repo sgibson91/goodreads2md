@@ -15,7 +15,7 @@ from html_to_markdown import convert
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    filename="/var/log/goodreads2md.log",
+    filename="goodreads2md.log",
     level=logging.DEBUG,
     format="%(asctime)s - %(message)s",
     datefmt="%Y-%m-%dT%H:%M:%S",
