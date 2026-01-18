@@ -1,14 +1,14 @@
 import logging
 import os
-import platform
 import re
 import string
-import tempfile
 from datetime import datetime as dt
+from io import StringIO
 from pathlib import Path
 
 import feedparser
 import jinja2
+import yaml
 from html_to_markdown import convert
 
 logger = logging.getLogger(__name__)
@@ -19,11 +19,62 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
 
+vals = {
+    "true": True,
+    "false": False,
+}
+
+
+def read_frontmatter(lines):
+    """
+    Read YAML frontmatter from a Markdown file.
+    YAML must be fenced with `---`.
+    """
+    if not lines or not lines[0].strip() == "---":
+        return None  # no frontmatter
+
+    yaml_lines = []
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+        yaml_lines.append(line)
+
+    return yaml.safe_load("".join(yaml_lines))
+
+
+def dict_diff(a, b):
+    """Establish the differences between two dictionaries."""
+    a = {k.replace("-", "_"): v for k, v in a.items()}
+    b = {k.replace("-", "_"): v for k, v in b.items()}
+
+    a = {
+        k: (vals[v] if isinstance(v, str) and (v in vals) else v) for k, v in a.items()
+    }
+    b = {
+        k: (vals[v] if isinstance(v, str) and (v in vals) else v) for k, v in b.items()
+    }
+
+    keys_a = set(a)
+    keys_b = set(b)
+
+    only_in_a = keys_a - keys_b
+    only_in_b = keys_b - keys_a
+
+    different_values = {
+        key: (a[key], b[key]) for key in keys_a & keys_b if a[key] != b[key]
+    }
+
+    return {
+        "only_in_a": {k: a[k] for k in only_in_a},
+        "only_in_b": {k: b[k] for k in only_in_b},
+        "different_values": different_values,
+    }
+
 
 def remove_punctuation(input_string):
     """Replace punctuation in a string with an empty char"""
     input_string = input_string.replace("&", "and")
-    regex_pattern = f"[{re.escape(string.punctuation.replace("-", ""))}’]"
+    regex_pattern = f"[{re.escape(string.punctuation.replace(" - ", " "))}’]"
     return re.sub(regex_pattern, "", input_string)
 
 
@@ -91,10 +142,10 @@ def generate_metadata(entry):
         read_at = ""
 
     metadata_vars = {
-        "authors": [entry.author_name],
+        "author": [entry.author_name],
         "book_id": entry.book_id,
         "book_description": convert(entry.book_description),
-        "cover_url": entry.book_large_image_url,
+        "cover": entry.book_large_image_url,
         "date_last_read": read_at,
         "format": [
             fmt.strip().replace("format-", "")
@@ -109,7 +160,7 @@ def generate_metadata(entry):
         "series_number": series_num,
         "status": status,
         "subtitle": subtitle,
-        "updated_time": dt.now().strftime("%Y-%m-%dT%H:%M"),
+        "updated": dt.now().strftime("%Y-%m-%dT%H:%M"),
     }
 
     return title, metadata_vars
@@ -117,16 +168,15 @@ def generate_metadata(entry):
 
 # Set paths
 ROOT = Path(__file__).parent.parent
-TMP_DIR = Path(
-    "/tmp" if platform.system() == "Darwin" else tempfile.gettempdir()
-).joinpath("books")
+DEST_DIR = Path("~/Google Drive/My Drive/devault/Atlas/Notes/Vaults/Library")
+DEST_DIR = DEST_DIR.expanduser()
 
-if not os.path.exists(TMP_DIR):
-    os.makedirs(TMP_DIR)
+# Read in the template files with Jinja
+with open(ROOT.joinpath("templates", "template-book-new.md")) as f:
+    new_template = jinja2.Template(f.read())
 
-# Read in the template file with Jinja
-with open(ROOT.joinpath("templates", "template-book.md")) as f:
-    template = jinja2.Template(f.read())
+with open(ROOT.joinpath("templates", "template-book-update.md")) as f:
+    update_template = jinja2.Template(f.read())
 
 # Read in Goodreads shelves to query
 with open(ROOT.joinpath("resources", "goodreads-shelves.txt")) as f:
@@ -153,8 +203,36 @@ for shelf in shelves:
     feed = feedparser.parse(gr_rss_base_url + shelf)
     for entry in feed.entries:
         title, metadata = generate_metadata(entry)
+        filepath = DEST_DIR.joinpath(f"{title}.md")
 
-        # Write a Markdown file for the current book
-        markdown = template.render(**metadata)
-        with open(TMP_DIR.joinpath(f"{title}.md"), "w") as f:
-            f.write(markdown)
+        if filepath.exists():
+            # Update an existing Markdown file
+            with open(filepath) as f:
+                current = read_frontmatter(f.readlines())
+
+            dict_diffs = dict_diff(current, metadata)
+            if dict_diffs["different_values"]:
+                logger.info(f"Updating file: {filepath}")
+                for k, v in dict_diffs["different_values"].items():
+                    current[k] = v[1]
+
+                stream = StringIO()
+                yaml.dump(current, stream)
+
+                metadata = {
+                    "yaml": stream.getvalue(),
+                    "book_description": metadata["book_description"],
+                }
+                markdown = update_template.render(**metadata)
+
+                with open(filepath, "w") as f:
+                    f.write(markdown)
+            else:
+                # Nothing to update
+                continue
+
+        else:
+            # Write a Markdown file for the current book
+            markdown = new_template.render(**metadata)
+            with open(filepath, "w") as f:
+                f.write(markdown)
