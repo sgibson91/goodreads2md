@@ -1,7 +1,7 @@
 ---
-author: {{ authors }}
+author: {{ author }}
 collection: ["[[Library.base]]"]
-cover: "{{ cover_url }}"
+cover: "{{ cover }}"
 date-last-read: "{{ date_last_read }}"
 format: {{ format }}
 genre: "{{ genre }}"
@@ -13,7 +13,7 @@ series-name: "{{ series_name }}"
 series-number: "{{ series_number }}"
 subtitle: "{{ subtitle }}"
 status: "{{ status }}"
-updated: "{{ updated_time }}"
+created: "{{ updated }}"
 ---
 
 ## Summary
