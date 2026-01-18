@@ -1,8 +1,9 @@
 #!/bin/bash
 
-SOURCE_DIR="/tmp/books/"
-DEST_DIR="gdrive:Atlas/Notes/Vaults/Library"
+cd "${HOME}/Documents/github/goodreads2md" || exit
+sudo venv/bin/python scripts/goodreads.py "${HOME}/Documents/github/devault/Atlas/Notes/Vaults/Library"
 
-rclone sync -P --checksum --log-file /var/log/rclone.txt "$SOURCE_DIR" "$DEST_DIR"
-
-rm -rf "$SOURCE_DIR"
+cd "${HOME}/Documents/github/devault" || exit
+git add .
+git commit -m "$(date '+%Y-%m-%dT%H:%M') Update Library files"
+git push
