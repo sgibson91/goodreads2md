@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd "${HOME}/Documents/github/goodreads2md" || exit
-venv/bin/python scripts/goodreads.py "${HOME}/Documents/github/devault/Atlas/Notes/Vaults/Library"
+.venv/bin/python scripts/goodreads.py "${HOME}/Documents/github/devault/Atlas/Notes/Vaults/Library"
 
 cd "${HOME}/Documents/github/devault" || exit
 git add .
