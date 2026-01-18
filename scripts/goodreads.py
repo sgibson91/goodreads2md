@@ -74,7 +74,7 @@ def dict_diff(a, b):
 def remove_punctuation(input_string):
     """Replace punctuation in a string with an empty char"""
     input_string = input_string.replace("&", "and")
-    regex_pattern = f"[{re.escape(string.punctuation.replace(" - ", " "))}’]"
+    regex_pattern = f"[{re.escape(string.punctuation.replace("-", ""))}’]"  # fmt: skip
     return re.sub(regex_pattern, "", input_string)
 
 
