@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 import re
@@ -219,9 +220,12 @@ def create_new_file(
     try:
         logger.info(f"Creating new file: {filepath}")
         markdown = new_template.render(**metadata)
+
         with open(filepath, "w") as f:
             f.write(markdown)
+
         return True
+
     except OSError as e:
         logger.error(f"Error creating file {filepath}: {e}")
         return False
@@ -252,10 +256,13 @@ def process_book_entry(
 
 def main() -> None:
     """Main entry point for the Goodreads to Markdown script."""
-    # Set paths
+    parser = argparse.ArgumentParser()
+    parser.add_argument("dirpath", type=Path)
+    args = parser.parse_args()
+    args.dirpath = args.dirpath.expanduser()
+
+    # Set root path
     ROOT = Path(__file__).parent.parent
-    DEST_DIR = Path("~/Google Drive/My Drive/devault/Atlas/Notes/Vaults/Library")
-    DEST_DIR = DEST_DIR.expanduser()
 
     # Read in the template files with Jinja
     try:
@@ -314,7 +321,7 @@ def main() -> None:
 
             for entry in feed.entries:
                 process_book_entry(
-                    entry, shelf, DEST_DIR, new_template, update_template
+                    entry, shelf, args.dirpath, new_template, update_template
                 )
 
         except Exception as e:
