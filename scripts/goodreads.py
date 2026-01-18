@@ -204,7 +204,7 @@ def update_existing_file(
 
         return True
 
-    except (IOError, yaml.YAMLError) as e:
+    except (OSError, yaml.YAMLError) as e:
         logger.error(f"Error updating file {filepath}: {e}")
         return False
 
@@ -222,7 +222,7 @@ def create_new_file(
         with open(filepath, "w") as f:
             f.write(markdown)
         return True
-    except IOError as e:
+    except OSError as e:
         logger.error(f"Error creating file {filepath}: {e}")
         return False
 
@@ -245,7 +245,9 @@ def process_book_entry(
             create_new_file(filepath, metadata, new_template)
 
     except Exception as e:
-        logger.error(f"Error processing book entry '{getattr(entry, 'title', 'unknown')}': {e}")
+        logger.error(
+            f"Error processing book entry '{getattr(entry, 'title', 'unknown')}': {e}"
+        )
 
 
 def main() -> None:
@@ -262,7 +264,7 @@ def main() -> None:
 
         with open(ROOT.joinpath("templates", "template-book-update.md")) as f:
             update_template = jinja2.Template(f.read())
-    except IOError as e:
+    except OSError as e:
         logger.error(f"Error reading template files: {e}")
         return
 
@@ -270,7 +272,7 @@ def main() -> None:
     try:
         with open(ROOT.joinpath("resources", "goodreads-shelves.txt")) as f:
             shelves = [line.strip("\n") for line in f.readlines()]
-    except IOError as e:
+    except OSError as e:
         logger.error(f"Error reading shelves file: {e}")
         return
 
@@ -279,6 +281,7 @@ def main() -> None:
     if not CI:
         try:
             from dotenv import load_dotenv
+
             load_dotenv()
         except ImportError:
             logger.warning("dotenv not available, using system environment variables")
@@ -288,7 +291,9 @@ def main() -> None:
     GOODREADS_USER_ID = os.getenv("GOODREADS_USER_ID")
 
     if not GOODREADS_RSS_KEY or not GOODREADS_USER_ID:
-        logger.error("Missing required environment variables: GOODREADS_RSS_KEY and/or GOODREADS_USER_ID")
+        logger.error(
+            "Missing required environment variables: GOODREADS_RSS_KEY and/or GOODREADS_USER_ID"
+        )
         return
 
     # Construct Goodreads RSS base URL
@@ -302,11 +307,15 @@ def main() -> None:
             feed = feedparser.parse(gr_rss_base_url + shelf)
 
             if feed.bozo:
-                logger.warning(f"Error parsing feed for shelf '{shelf}': {feed.bozo_exception}")
+                logger.warning(
+                    f"Error parsing feed for shelf '{shelf}': {feed.bozo_exception}"
+                )
                 continue
 
             for entry in feed.entries:
-                process_book_entry(entry, shelf, DEST_DIR, new_template, update_template)
+                process_book_entry(
+                    entry, shelf, DEST_DIR, new_template, update_template
+                )
 
         except Exception as e:
             logger.error(f"Error processing shelf '{shelf}': {e}")
