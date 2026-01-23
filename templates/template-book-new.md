@@ -1,5 +1,6 @@
 ---
 author: {{ author }}
+created: "{{ updated }}"
 collection: ["[[Library.base]]"]
 cover: "{{ cover }}"
 date-last-read: "{{ date_last_read }}"
@@ -13,7 +14,7 @@ series-name: "{{ series_name }}"
 series-number: "{{ series_number }}"
 subtitle: "{{ subtitle }}"
 status: "{{ status }}"
-created: "{{ updated }}"
+tags: ["book"]
 ---
 
 ## Summary
