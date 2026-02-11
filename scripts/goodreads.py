@@ -178,6 +178,8 @@ def update_existing_file(
     try:
         with open(filepath) as f:
             current = read_frontmatter(f.readlines())
+        current.pop("book_id", None)
+        current.pop("book_description", None)
 
         if current is None:
             logger.warning(f"No frontmatter found in: {filepath}")
@@ -247,6 +249,9 @@ def process_book_entry(
         filepath = dest_dir.joinpath(f"{title}.md")
 
         if filepath.exists():
+            metadata.pop("book_id", None)
+            metadata.pop("book_description", None)
+
             update_existing_file(filepath, metadata, update_template)
         else:
             create_new_file(filepath, metadata, new_template)
