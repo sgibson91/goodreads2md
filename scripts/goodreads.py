@@ -190,6 +190,8 @@ def update_existing_file(
             return False
 
         logger.info(f"Updating file: {filepath}")
+        if "tags" not in current:
+            current["tags"] = ["book"]
         for k, v in dict_diffs["only_in_b"].items():
             current[k] = v
         if not list(dict_diffs["different_values"].keys()) == ["updated"]:
