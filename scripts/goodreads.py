@@ -250,8 +250,6 @@ def process_book_entry(
 
         if filepath.exists():
             metadata.pop("book_id", None)
-            metadata.pop("book_description", None)
-
             update_existing_file(filepath, metadata, update_template)
         else:
             create_new_file(filepath, metadata, new_template)
