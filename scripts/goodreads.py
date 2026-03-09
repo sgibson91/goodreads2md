@@ -179,7 +179,6 @@ def update_existing_file(
         with open(filepath) as f:
             current = read_frontmatter(f.readlines())
         current.pop("book_id", None)
-        current.pop("book_description", None)
 
         if current is None:
             logger.warning(f"No frontmatter found in: {filepath}")
@@ -197,6 +196,8 @@ def update_existing_file(
         if not list(dict_diffs["different_values"].keys()) == ["updated"]:
             for k, v in dict_diffs["different_values"].items():
                 current[k] = v[1]
+        current.pop("book_description", None)
+        print(current.keys())
 
         stream = StringIO()
         yaml.dump(current, stream)
