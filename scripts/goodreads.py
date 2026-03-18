@@ -191,13 +191,18 @@ def update_existing_file(
         logger.info(f"Updating file: {filepath}")
         if "tags" not in current:
             current["tags"] = ["book"]
+        else:
+            if "book" not in current["tags"]:
+                current["tags"].extend(["book"])
+
         for k, v in dict_diffs["only_in_b"].items():
             current[k] = v
+
         if not list(dict_diffs["different_values"].keys()) == ["updated"]:
             for k, v in dict_diffs["different_values"].items():
                 current[k] = v[1]
+
         current.pop("book_description", None)
-        print(current.keys())
 
         stream = StringIO()
         yaml.dump(current, stream)
