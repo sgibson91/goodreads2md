@@ -148,7 +148,7 @@ def generate_metadata(entry: Any, shelf: str) -> tuple[str, dict[str, Any]]:
         "book_id": entry.book_id,
         "book_description": convert(entry.book_description),
         "cover": entry.book_large_image_url,
-        "date_last_read": read_at,
+        "date-last-read": read_at,
         "format": [
             fmt.strip().replace("format-", "")
             for fmt in entry.user_shelves.split(",")
